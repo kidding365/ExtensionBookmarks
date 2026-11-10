@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Load sync status
   const { eb_settings } = await chrome.storage.local.get('eb_settings');
   const settings = { ...DEFAULT_SETTINGS, ...(eb_settings || {}) };
-  if (!settings.githubToken || !settings.gistId) {
+  if (!settings.githubToken || (!settings.gistId && !settings.githubRepo)) {
     syncStatusBadge.className = 'sync-badge';
     syncStatusText.textContent = 'Setup Sync';
   }

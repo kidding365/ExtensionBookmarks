@@ -98,6 +98,8 @@ export const DEFAULT_SETTINGS = {
   theme: 'system', // 'system' | 'dark' | 'light'
   githubToken: '',
   gistId: '',
+  githubRepo: '', // e.g. 'owner/ExtensionBookmarks'
+  githubBranch: 'sync-data',
   lastSyncTime: null,
   lastSyncStatus: 'idle', // 'idle' | 'syncing' | 'success' | 'error'
   lastSyncError: null

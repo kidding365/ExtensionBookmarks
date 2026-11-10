@@ -23,12 +23,17 @@ export class DiffEngine {
       return { status: 'already-syncing' };
     }
 
-    if (!settings.githubToken || !settings.gistId) {
+    if (!settings.githubToken || (!settings.gistId && !settings.githubRepo)) {
       return { status: 'unconfigured' };
     }
 
     this.isSyncing = true;
-    gistClient.setCredentials(settings.githubToken, settings.gistId);
+    gistClient.setCredentials(
+      settings.githubToken,
+      settings.gistId,
+      settings.githubRepo,
+      settings.githubBranch || 'sync-data'
+    );
 
     try {
       // 1. Fetch remote data from Gist

@@ -64,7 +64,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
   if (alarm.name === 'eb_auto_sync_alarm') {
     const { eb_settings } = await chrome.storage.local.get('eb_settings');
     const settings = { ...DEFAULT_SETTINGS, ...(eb_settings || {}) };
-    if (settings.githubToken && settings.gistId) {
+    if (settings.githubToken && (settings.gistId || settings.githubRepo)) {
       await diffEngine.runSync(settings);
     }
   }
@@ -116,7 +116,7 @@ function triggerDebouncedSync() {
   syncDebounceTimer = setTimeout(async () => {
     const { eb_settings } = await chrome.storage.local.get('eb_settings');
     const settings = { ...DEFAULT_SETTINGS, ...(eb_settings || {}) };
-    if (settings.githubToken && settings.gistId) {
+    if (settings.githubToken && (settings.gistId || settings.githubRepo)) {
       await diffEngine.runSync(settings);
     }
   }, SYNC_DEBOUNCE_MS);

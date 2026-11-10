@@ -162,8 +162,15 @@ class DashboardApp {
       gistClient.setCredentials(token, '');
       try {
         const user = await gistClient.testToken();
-        alertBox.className = 'alert-box success';
-        alertBox.textContent = `Connected successfully as @${user.login}!`;
+        if (user.suggestedMode === 'repo') {
+          const repoInput = document.getElementById('inputGithubRepo');
+          if (!repoInput.value) repoInput.value = user.defaultRepo;
+          alertBox.className = 'alert-box success';
+          alertBox.textContent = `Connected as @${user.login}! Detected Fine-Grained PAT, configured for ${user.defaultRepo} (branch: sync-data).`;
+        } else {
+          alertBox.className = 'alert-box success';
+          alertBox.textContent = `Connected successfully as @${user.login}!`;
+        }
       } catch (err) {
         alertBox.className = 'alert-box error';
         alertBox.textContent = `Connection failed: ${err.message}`;
@@ -201,6 +208,7 @@ class DashboardApp {
 
     document.getElementById('btnSaveSettings').addEventListener('click', async () => {
       this.settings.githubToken = document.getElementById('inputGithubToken').value.trim();
+      this.settings.githubRepo = document.getElementById('inputGithubRepo').value.trim();
       this.settings.gistId = document.getElementById('inputGistId').value.trim();
       this.settings.syncBookmarksBar = document.getElementById('toggleSyncBookmarksBar').checked;
       this.settings.syncOtherBookmarks = document.getElementById('toggleSyncOtherBookmarks').checked;
@@ -211,7 +219,7 @@ class DashboardApp {
       this.closeModal('settingsModal');
       await this.updateSyncUI();
 
-      if (this.settings.githubToken && this.settings.gistId) {
+      if (this.settings.githubToken && (this.settings.gistId || this.settings.githubRepo)) {
         this.triggerSync();
       }
     });
@@ -336,7 +344,9 @@ class DashboardApp {
     const label = document.getElementById('syncStatusLabel');
     const timeText = document.getElementById('lastSyncTime');
 
-    if (!this.settings.githubToken || !this.settings.gistId) {
+    const isConfigured = this.settings.githubToken && (this.settings.gistId || this.settings.githubRepo);
+
+    if (!isConfigured) {
       dot.className = 'status-dot';
       label.textContent = 'Not Configured';
       timeText.textContent = 'Click settings to configure';
@@ -349,7 +359,8 @@ class DashboardApp {
       timeText.textContent = this.settings.lastSyncError || 'Check settings';
     } else {
       dot.className = 'status-dot';
-      label.textContent = 'Synced with Gist';
+      const targetName = this.settings.githubRepo ? this.settings.githubRepo : 'Gist';
+      label.textContent = `Synced with ${targetName}`;
       timeText.textContent = this.settings.lastSyncTime
         ? `Last sync: ${formatTimeAgo(this.settings.lastSyncTime)}`
         : 'Ready';
@@ -769,6 +780,7 @@ class DashboardApp {
 
   populateSettingsForm() {
     document.getElementById('inputGithubToken').value = this.settings.githubToken || '';
+    document.getElementById('inputGithubRepo').value = this.settings.githubRepo || '';
     document.getElementById('inputGistId').value = this.settings.gistId || '';
     document.getElementById('toggleSyncBookmarksBar').checked = this.settings.syncBookmarksBar;
     document.getElementById('toggleSyncOtherBookmarks').checked = this.settings.syncOtherBookmarks;

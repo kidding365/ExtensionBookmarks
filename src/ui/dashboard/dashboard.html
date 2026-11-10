@@ -151,23 +151,28 @@
   <div id="settingsModal" class="modal-backdrop hidden">
     <div class="modal-dialog">
       <div class="modal-header">
-        <h3>GitHub Gist Sync Settings</h3>
+        <h3>GitHub Cloud Sync Settings</h3>
         <button id="btnCloseSettings" class="modal-close">&times;</button>
       </div>
       <div class="modal-body">
         <div class="form-group">
           <label for="inputGithubToken">GitHub Personal Access Token (PAT):</label>
-          <input type="password" id="inputGithubToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
-          <span class="field-hint">Requires only <code>gist</code> scope. <a href="https://github.com/settings/tokens/new?scopes=gist&description=ExtensionBookmarks" target="_blank">Create token on GitHub &rarr;</a></span>
+          <input type="password" id="inputGithubToken" placeholder="ghp_... or github_pat_...">
+          <span class="field-hint">Supports Fine-Grained PATs (<code>github_pat_...</code>) or Classic PATs (<code>ghp_...</code>).</span>
         </div>
 
-        <div class="form-group">
+        <div class="form-group" id="repoConfigGroup">
+          <label for="inputGithubRepo">GitHub Repository (for Fine-Grained PAT):</label>
+          <input type="text" id="inputGithubRepo" placeholder="owner/ExtensionBookmarks">
+          <span class="field-hint">Sync data will be saved to branch <code>sync-data</code> in your repo.</span>
+        </div>
+
+        <div class="form-group" id="gistConfigGroup">
           <div class="gist-label-row">
-            <label for="inputGistId">Private Gist ID:</label>
-            <button id="btnAutoCreateGist" class="link-action">Create New Private Gist for Me</button>
+            <label for="inputGistId">Private Gist ID (for Classic PAT):</label>
+            <button id="btnAutoCreateGist" class="link-action">Create Gist for Me</button>
           </div>
           <input type="text" id="inputGistId" placeholder="e.g. 7f8a9b2c3d4e5f6...">
-          <span class="field-hint">Leave blank and click above to automatically create one.</span>
         </div>
 
         <div class="form-group">
