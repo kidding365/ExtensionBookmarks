@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "lastModified": 1794286290525,
+  "bookmarksBar": [
+    {
+      "id": "bm_test_1",
+      "type": "bookmark",
+      "title": "GitHub",
+      "url": "https://github.com"
+    }
+  ],
+  "otherBookmarks": [
+    {
+      "id": "fld_mobile_root",
+      "type": "folder",
+      "title": "Mobile Bookmarks",
+      "isMobileFolder": true,
+      "children": [
+        {
+          "id": "bm_test_mobile_1",
+          "type": "bookmark",
+          "title": "Android Chrome Test",
+          "url": "https://google.com"
+        }
+      ]
+    }
+  ]
+}
