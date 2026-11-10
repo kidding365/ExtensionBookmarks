@@ -1,12 +1,13 @@
 # ExtensionBookmarks: Technical Architecture & Specification
 
 ## 1. Executive Summary & Design Goals
-**ExtensionBookmarks** is a lightweight, cross-browser browser extension (Manifest V3) that unifies:
-1. **Native Browser Bookmarks** (`Bookmarks Bar` and `Other Bookmarks`, including normalized `Mobile Bookmarks`).
-2. **Stored Pages (OneTab Stash Sessions)** with enhanced **Group Folders** (e.g. *YouTube*, *Dev*, *Research*).
-3. **Cross-Browser & Cross-Device Cloud Sync** powered by **Private GitHub Gists** (100% free, version-controlled, zero vendor lock-in).
-4. **Independent Sync Toggles** for each section.
-5. **No interference with native Google Account or Firefox Sync** (acting as a mobile bridgehead).
+**ExtensionBookmarks** is a lightweight, high-performance, cross-browser browser extension (Manifest V3) that unifies:
+1. **Native Browser Bookmarks**: `Bookmarks Bar` and `Other Bookmarks` (with `Mobile Bookmarks` normalized as a folder inside `Other Bookmarks`).
+2. **Stored Pages (OneTab Stash Sessions)**: Enhanced with custom **Group Folders** (e.g. *YouTube*, *Dev*, *Research*, *Shopping*) and named session batches.
+3. **Cross-Browser & Cross-Device Cloud Sync**: Powered by a **Private GitHub Gist** (100% free, version-controlled, zero vendor lock-in).
+4. **Independent Sync Toggles**: Enable or disable sync individually for `Bookmarks Bar`, `Other Bookmarks`, and `Stored Pages`.
+5. **Non-Interfering Mobile Bridgehead**: Operates cleanly with Google Chrome Account Sync and Firefox Sync, bridging mobile devices (Android Chrome / Firefox Mobile) without requiring mobile extension support.
+6. **Local-First & Zero Browser Drag**: Sub-millisecond local operations; service worker stays idle until triggered; offline-first with background network recovery.
 
 ---
 
@@ -18,7 +19,7 @@ graph TD
     
     subgraph Section1 ["1. Bookmarks Bar"]
         BMB["Bookmarks Bar\n(Native Browser Toolbar)"]
-        BMB_F["Folders & Bookmarks with Stable IDs"]
+        BMB_F["Folders & Bookmarks with Stable Alphanumeric IDs"]
     end
     
     subgraph Section2 ["2. Other Bookmarks"]
@@ -49,22 +50,23 @@ Each section can be independently toggled:
 
 ---
 
-## 3. Data Schema (GitHub Gist Payload)
+## 3. Data Schema: Multi-File GitHub Gist Architecture
 
-The sync file (`extension_bookmarks_sync.json`) stored in your private GitHub Gist uses a unified schema with **alphanumeric stable IDs (UUIDs)** for every node:
+To avoid uploading massive blobs and prevent GitHub's 1MB API truncation limit, the private Gist is partitioned into **3 separate files**:
 
+```
+[Your Private Gist]
+├── bookmarks.json      # Bookmarks Bar + Other Bookmarks + Mobile Bookmarks
+├── stored_pages.json   # Group folders + Tab sessions (OneTab equivalent)
+└── settings.json       # Sync toggles, intervals, and device metadata
+```
+
+### File 1: `bookmarks.json`
 ```json
 {
   "version": 1,
   "lastModified": 1731050000000,
-  "deviceId": "dev_win_desktop_chrome_a8f9",
-  "settings": {
-    "syncBookmarksBar": true,
-    "syncOtherBookmarks": true,
-    "syncStoredPages": true,
-    "autoSyncIntervalMinutes": 10,
-    "deletionThresholdSafety": 30
-  },
+  "deviceId": "dev_win_chrome_9a2f",
   "bookmarksBar": [
     {
       "id": "bm_4f8a12bc",
@@ -90,42 +92,63 @@ The sync file (`extension_bookmarks_sync.json`) stored in your private GitHub Gi
       "children": [...]
     }
   ],
-  "storedPages": {
-    "folders": [
-      {
-        "id": "spf_youtube_01",
-        "name": "YouTube",
-        "color": "#ff0000",
-        "createdAt": 1731010000000
-      }
-    ],
-    "sessions": [
-      {
-        "id": "sps_78b9e1",
-        "folderId": "spf_youtube_01",
-        "title": "React 19 Deep Dive",
-        "createdAt": 1731020000000,
-        "isLocked": false,
-        "tabs": [
-          {
-            "id": "tab_1a2b",
-            "title": "React 19 Beta Release",
-            "url": "https://react.dev/blog/2024/04/25/react-19",
-            "faviconUrl": "https://react.dev/favicon.ico"
-          }
-        ]
-      }
-    ]
-  },
   "tombstones": {
     "bm_deleted_old_id": 1731030000000
   }
 }
 ```
 
+### File 2: `stored_pages.json`
+```json
+{
+  "version": 1,
+  "lastModified": 1731050000000,
+  "deviceId": "dev_win_chrome_9a2f",
+  "folders": [
+    {
+      "id": "spf_youtube_01",
+      "name": "YouTube",
+      "color": "#ff0000",
+      "createdAt": 1731010000000
+    }
+  ],
+  "sessions": [
+    {
+      "id": "sps_78b9e1",
+      "folderId": "spf_youtube_01",
+      "title": "React 19 Deep Dive",
+      "createdAt": 1731020000000,
+      "isLocked": false,
+      "tabs": [
+        {
+          "id": "tab_1a2b",
+          "title": "React 19 Beta Release",
+          "url": "https://react.dev/blog/2024/04/25/react-19",
+          "faviconUrl": "https://react.dev/favicon.ico"
+        }
+      ]
+    }
+  ]
+}
+```
+
+### File 3: `settings.json`
+```json
+{
+  "version": 1,
+  "syncBookmarksBar": true,
+  "syncOtherBookmarks": true,
+  "syncStoredPages": true,
+  "autoSyncIntervalMinutes": 10,
+  "deletionThresholdSafety": 30,
+  "theme": "system",
+  "lastSyncTime": 1731050000000
+}
+```
+
 ---
 
-## 4. Cross-Browser Root Mapping & Sync Engine
+## 4. Cross-Browser Root Mapping & Mobile Bridgehead
 
 ```mermaid
 sequenceDiagram
@@ -146,26 +169,42 @@ sequenceDiagram
     FF->>AF: Firefox native Sync pushes to mobile!
 ```
 
-### Key Technical Safeguards:
-1. **Stable Alphanumeric IDs**:
-   - Every bookmark, folder, and tab session has a unique ID (`bm_...`, `fld_...`, `sps_...`).
-   - Editing a title or URL updates the existing node; it is never treated as a delete + create.
-2. **Tombstones (Anti-Resurrection)**:
-   - When a bookmark is deleted locally, its stable ID is added to `tombstones` with a timestamp.
-   - Other devices receiving the update remove the matching bookmark instead of re-uploading it.
-   - Tombstones older than 30 days are automatically garbage-collected.
-3. **Loop / Echo Suppression**:
-   - When the extension applies incoming updates from the Gist, an internal lock `isApplyingSync = true` is engaged.
-   - Local `chrome.bookmarks.onCreated/onChanged/onRemoved` listeners ignore events fired by the extension's own operations.
-4. **Deletion Failsafe (Anti-Wipeout Guard)**:
-   - If an incoming sync batch attempts to delete more than the configured safety threshold (e.g. > 30 items or > 50% of bookmarks), the sync pauses and requests user confirmation in the dashboard.
-5. **Browser Root Normalization**:
-   - **Firefox**: `toolbar_____` ➔ Bookmarks Bar, `unfiled_____` ➔ Other Bookmarks, `mobile______` ➔ `Other Bookmarks / Mobile Bookmarks`.
-   - **Chromium**: ID `1` ➔ Bookmarks Bar, ID `2` ➔ Other Bookmarks, ID `3` ➔ `Other Bookmarks / Mobile Bookmarks`.
+### Root Normalization Mapping
+| Browser | Bookmarks Bar Root ID | Other Bookmarks Root ID | Mobile Bookmarks Handling |
+| :--- | :--- | :--- | :--- |
+| **Chromium** (Chrome / Edge / Brave) | `"1"` | `"2"` | Root `"3"` mapped into child folder inside `"2"` |
+| **Firefox** (Gecko) | `"toolbar_____"` | `"unfiled_____"` | `"mobile______"` mapped into child folder inside `"unfiled_____"` |
 
 ---
 
-## 5. Directory Structure for the Extension
+## 5. Critical Technical Safeguards
+
+1. **Stable Alphanumeric IDs (UUIDs)**:
+   - Every bookmark, folder, and tab session has a globally unique ID (`bm_...`, `fld_...`, `sps_...`).
+   - Editing a title or URL updates the existing node; it is never treated as a delete + create.
+2. **Initial Sync Deduplication & Setup Wizard**:
+   - On connecting a new browser profile to an existing Gist, the user is offered:
+     - 🔗 *Merge Local with Cloud (Smart Deduplication by normalized URL)*
+     - ☁️ *Replace Local with Cloud*
+     - 💻 *Replace Cloud with Local*
+3. **Tombstones (Anti-Resurrection)**:
+   - When a bookmark is deleted locally, its stable ID is added to `tombstones` with a timestamp.
+   - Other devices receiving the update remove the matching bookmark instead of re-uploading it.
+   - Tombstones older than 30 days are automatically garbage-collected.
+4. **Loop / Echo Suppression**:
+   - When applying incoming updates from the Gist, an internal lock `isApplyingSync = true` is engaged.
+   - Local `chrome.bookmarks.onCreated/onChanged/onRemoved` listeners ignore events fired during the extension's own write operations.
+5. **Deletion Failsafe (Anti-Wipeout Guard)**:
+   - If an incoming sync batch attempts to delete more than the configured safety threshold (e.g. > 30 items or > 50% of bookmarks), the sync pauses and requests explicit user confirmation in the dashboard.
+6. **Local-First & Offline Resilience**:
+   - All actions (stashing tabs, creating folders, editing bookmarks) write immediately to `chrome.storage.local`.
+   - A queue holds pending sync operations until network connectivity is verified (`navigator.onLine`).
+7. **GitHub API Efficiency (ETags)**:
+   - Reads include `If-None-Match` headers. If the Gist hasn't changed, GitHub returns `304 Not Modified`, saving bandwidth and preserving the 5,000 req/hr rate limit.
+
+---
+
+## 6. Directory Structure
 
 ```
 ExtensionBookmarks/
@@ -176,20 +215,21 @@ ExtensionBookmarks/
 │   └── extension_architecture.md  # System Architecture & Spec
 ├── icons/
 │   ├── icon16.png
+│   ├── icon32.png
 │   ├── icon48.png
 │   └── icon128.png
 ├── src/
 │   ├── background/
 │   │   └── background.js          # Service worker: alarms, bookmark listeners, stash shortcut
 │   ├── sync/
-│   │   ├── gist-client.js         # GitHub Gist API (read, write, create, ETag cache)
-│   │   ├── diff-engine.js         # 3-way reconciliation, stable ID mapper, tombstones
+│   │   ├── gist-client.js         # GitHub Gist API (read, write, create, ETag cache, raw fallback)
+│   │   ├── diff-engine.js         # 3-way reconciliation, smart deduplication, tombstones
 │   │   └── id-store.js            # Local mapping: browser bookmark ID <-> stable ID
 │   ├── bookmarks/
 │   │   ├── normalizer.js          # Browser root detector (Firefox vs Chrome)
 │   │   └── manager.js             # Local bookmark reader & sequential writer
 │   ├── stash/
-│   │   ├── stash-service.js       # Window / tab grabber, collapse into session
+│   │   ├── stash-service.js       # Window / tab grabber, collapse into session, group folders
 │   │   └── onetab-importer.js     # OneTab plain text parser & export generator
 │   └── ui/
 │       ├── popup/
@@ -199,23 +239,5 @@ ExtensionBookmarks/
 │       └── dashboard/
 │           ├── dashboard.html     # Full OneTab + Bookmark Manager
 │           ├── dashboard.css      # Dark & light theme, responsive sidebar
-│           └── dashboard.js       # Search, folder grouping, sync controls
+│           └── dashboard.js       # Search, folder grouping, sync controls, settings
 ```
-
----
-
-## 6. Implementation Stages
-1. **Stage 1: Core Foundation & Manifest V3**
-   - Base `manifest.json` with multi-browser support.
-   - ID mapper & browser bookmark root normalizer.
-2. **Stage 2: Stored Pages (OneTab) & Group Folders**
-   - Tab stasher service (Stash window / Stash current tab / Shortcuts).
-   - Sidebar with `All`, custom Group Folders (*YouTube*, *Research*, etc.), and sessions.
-   - OneTab plain text import/export utility.
-3. **Stage 3: GitHub Gist Sync Engine**
-   - Gist API integration (PAT authentication, automatic Gist initialization).
-   - Diff & merge engine with stable UUIDs and tombstones.
-   - Self-trigger / loop suppression & deletion safety guard.
-4. **Stage 4: Unified Dashboard & Search UI**
-   - High-speed instant search across Bookmarks Bar, Other Bookmarks, and Stored Pages.
-   - Settings modal with section sync toggles and credentials.

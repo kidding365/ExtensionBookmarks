@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ExtensionBookmarks Dashboard</title>
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="brand">
+          <img src="../../../icons/icon32.png" alt="Logo" class="brand-logo">
+          <div class="brand-text">
+            <h1>ExtensionBookmarks</h1>
+            <span class="sub-brand">Sync & Stash</span>
+          </div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <!-- Section: Stored Pages -->
+        <div class="nav-section">
+          <div class="nav-section-title">
+            <span>STORED PAGES (ONETAB)</span>
+            <button id="btnAddFolder" class="icon-sub-btn" title="Add Group Folder">+</button>
+          </div>
+          <ul class="nav-list">
+            <li class="nav-item active" data-view="stored" data-folder="all">
+              <span class="nav-icon">📑</span>
+              <span class="nav-label">All Stashes</span>
+              <span id="allStashesCount" class="nav-badge">0</span>
+            </li>
+            <div id="groupFoldersList" class="folder-sublist">
+              <!-- Dynamically populated group folders (YouTube, Research, Dev...) -->
+            </div>
+          </ul>
+        </div>
+
+        <!-- Section: Native Bookmarks -->
+        <div class="nav-section">
+          <div class="nav-section-title">NATIVE BOOKMARKS</div>
+          <ul class="nav-list">
+            <li class="nav-item" data-view="bookmarks-bar">
+              <span class="nav-icon">⭐</span>
+              <span class="nav-label">Bookmarks Bar</span>
+              <span id="bookmarksBarCount" class="nav-badge">0</span>
+            </li>
+            <li class="nav-item" data-view="other-bookmarks">
+              <span class="nav-icon">📁</span>
+              <span class="nav-label">Other Bookmarks</span>
+              <span id="otherBookmarksCount" class="nav-badge">0</span>
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div class="sidebar-footer">
+        <div class="sync-card">
+          <div class="sync-info">
+            <div class="sync-indicator">
+              <span id="syncDot" class="status-dot"></span>
+              <span id="syncStatusLabel" class="sync-label">Not Configured</span>
+            </div>
+            <span id="lastSyncTime" class="sync-subtext">Click sync to start</span>
+          </div>
+          <button id="btnSidebarSync" class="btn-sync" title="Sync with GitHub Gist">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="sync-svg">
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <polyline points="1 20 1 14 7 14"></polyline>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+          </button>
+        </div>
+
+        <div class="footer-actions">
+          <button id="btnOpenImportExport" class="footer-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="foot-icon">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>OneTab Import / Export</span>
+          </button>
+          <button id="btnOpenSettings" class="footer-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="foot-icon">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+            <span>Sync Settings</span>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Panel -->
+    <main class="main-content">
+      <!-- Search & Controls Header -->
+      <header class="content-header">
+        <div class="search-bar-container">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="search-bar-icon">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="globalSearchInput" placeholder="Instant search tabs and bookmarks (e.g. youtube, react, github)..." autocomplete="off">
+          <button id="btnClearSearch" class="btn-clear-search hidden">&times;</button>
+        </div>
+
+        <div class="header-actions">
+          <button id="btnHeaderStashWindow" class="btn-action btn-action-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-svg">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="9" y1="3" x2="9" y2="21"></line>
+            </svg>
+            <span>Stash Window</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Search Filter Pills (Visible when searching) -->
+      <div id="searchPills" class="search-pills-bar hidden">
+        <span class="pill-label">Search in:</span>
+        <button class="pill active" data-filter="all">All</button>
+        <button class="pill" data-filter="stored">Stored Pages</button>
+        <button class="pill" data-filter="bookmarks-bar">Bookmarks Bar</button>
+        <button class="pill" data-filter="other-bookmarks">Other Bookmarks</button>
+      </div>
+
+      <!-- View Title & Stats Bar -->
+      <div class="view-header">
+        <div class="view-title-group">
+          <h2 id="viewHeading">All Stashed Pages</h2>
+          <span id="viewSubheading" class="view-meta">0 sessions</span>
+        </div>
+        <div id="viewActions" class="view-actions-right">
+          <!-- Contextual actions like Restore All, Delete All -->
+        </div>
+      </div>
+
+      <!-- Content Area -->
+      <div id="contentList" class="content-body">
+        <!-- Rendered Session Cards or Bookmark Trees -->
+      </div>
+    </main>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settingsModal" class="modal-backdrop hidden">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>GitHub Gist Sync Settings</h3>
+        <button id="btnCloseSettings" class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="inputGithubToken">GitHub Personal Access Token (PAT):</label>
+          <input type="password" id="inputGithubToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+          <span class="field-hint">Requires only <code>gist</code> scope. <a href="https://github.com/settings/tokens/new?scopes=gist&description=ExtensionBookmarks" target="_blank">Create token on GitHub &rarr;</a></span>
+        </div>
+
+        <div class="form-group">
+          <div class="gist-label-row">
+            <label for="inputGistId">Private Gist ID:</label>
+            <button id="btnAutoCreateGist" class="link-action">Create New Private Gist for Me</button>
+          </div>
+          <input type="text" id="inputGistId" placeholder="e.g. 7f8a9b2c3d4e5f6...">
+          <span class="field-hint">Leave blank and click above to automatically create one.</span>
+        </div>
+
+        <div class="form-group">
+          <label class="section-divider-label">SECTION SYNC TOGGLES</label>
+          <div class="toggle-row">
+            <label class="switch-label">
+              <input type="checkbox" id="toggleSyncBookmarksBar" checked>
+              <span class="switch-text">Sync <strong>Bookmarks Bar</strong></span>
+            </label>
+          </div>
+          <div class="toggle-row">
+            <label class="switch-label">
+              <input type="checkbox" id="toggleSyncOtherBookmarks" checked>
+              <span class="switch-text">Sync <strong>Other Bookmarks</strong> (includes Mobile Bookmarks)</span>
+            </label>
+          </div>
+          <div class="toggle-row">
+            <label class="switch-label">
+              <input type="checkbox" id="toggleSyncStoredPages" checked>
+              <span class="switch-text">Sync <strong>Stored Pages (OneTab)</strong></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="selectSyncInterval">Auto-Sync Schedule:</label>
+          <select id="selectSyncInterval" class="form-select">
+            <option value="5">Every 5 minutes</option>
+            <option value="10" selected>Every 10 minutes</option>
+            <option value="30">Every 30 minutes</option>
+            <option value="0">Manual Sync Only</option>
+          </select>
+        </div>
+
+        <div id="settingsAlert" class="alert-box hidden"></div>
+      </div>
+      <div class="modal-footer">
+        <button id="btnTestGithub" class="btn btn-secondary">Test Connection</button>
+        <button id="btnSaveSettings" class="btn btn-primary">Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- OneTab Import / Export Modal -->
+  <div id="importExportModal" class="modal-backdrop hidden">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>OneTab Import & Export</h3>
+        <button id="btnCloseImportExport" class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="tabs-nav">
+          <button id="tabBtnImport" class="tab-link active">Import from OneTab</button>
+          <button id="tabBtnExport" class="tab-link">Export</button>
+        </div>
+
+        <!-- Import Tab -->
+        <div id="tabContentImport" class="tab-content">
+          <p class="tab-description">Paste your OneTab export text below (one line per URL or <code>URL | Title</code>). Empty lines create separate sessions.</p>
+          <div class="form-group">
+            <label for="importFolderSelect">Assign to Group Folder (Optional):</label>
+            <select id="importFolderSelect" class="form-select">
+              <option value="">(None / General)</option>
+            </select>
+          </div>
+          <textarea id="importTextarea" class="import-textarea" placeholder="https://youtube.com | YouTube&#10;https://github.com | GitHub&#10;&#10;https://news.ycombinator.com | Hacker News"></textarea>
+          <button id="btnDoImport" class="btn btn-primary" style="margin-top: 10px; width: 100%;">Import Tabs into Stored Pages</button>
+        </div>
+
+        <!-- Export Tab -->
+        <div id="tabContentExport" class="tab-content hidden">
+          <p class="tab-description">Export your stored pages to OneTab format or download a complete JSON backup.</p>
+          <div class="export-actions">
+            <button id="btnExportOneTab" class="btn btn-secondary">Copy OneTab Text Format</button>
+            <button id="btnDownloadJsonBackup" class="btn btn-secondary">Download Full JSON Backup</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Folder Modal -->
+  <div id="folderModal" class="modal-backdrop hidden">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-header">
+        <h3>New Group Folder</h3>
+        <button id="btnCloseFolderModal" class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="inputFolderName">Folder Name:</label>
+          <input type="text" id="inputFolderName" placeholder="e.g. YouTube, Dev, Shopping...">
+        </div>
+        <div class="form-group">
+          <label>Accent Color:</label>
+          <div class="color-picker-row">
+            <span class="color-dot selected" data-color="#ef4444" style="background: #ef4444;"></span>
+            <span class="color-dot" data-color="#f59e0b" style="background: #f59e0b;"></span>
+            <span class="color-dot" data-color="#10b981" style="background: #10b981;"></span>
+            <span class="color-dot" data-color="#3b82f6" style="background: #3b82f6;"></span>
+            <span class="color-dot" data-color="#8b5cf6" style="background: #8b5cf6;"></span>
+            <span class="color-dot" data-color="#ec4899" style="background: #ec4899;"></span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btnCancelFolder" class="btn btn-secondary">Cancel</button>
+        <button id="btnCreateFolder" class="btn btn-primary">Create Folder</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="dashboard.js"></script>
+</body>
+</html>
