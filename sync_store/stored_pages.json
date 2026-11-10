@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "folders": [
+    {
+      "id": "spf_youtube",
+      "name": "YouTube",
+      "color": "#ef4444",
+      "createdAt": 1794286290525
+    }
+  ],
+  "sessions": [
+    {
+      "id": "sps_live_test",
+      "folderId": "spf_youtube",
+      "title": "Live Test Session",
+      "createdAt": 1794286290525,
+      "isLocked": false,
+      "tabs": [
+        {
+          "id": "tab_1",
+          "title": "YouTube Test",
+          "url": "https://youtube.com",
+          "domain": "youtube.com"
+        }
+      ]
+    }
+  ]
+}
