@@ -279,6 +279,9 @@ export class GistClient {
   async _updateRepoSyncData({ bookmarks, storedPages, settings }) {
     if (!this.repo) throw new Error('Repository is not configured.');
 
+    // Ensure target branch exists in the repository
+    await this.initRepoBranch(this.repo);
+
     const writeFile = async (filename, contentObj) => {
       if (contentObj === undefined) return;
       const path = `sync_store/${filename}`;

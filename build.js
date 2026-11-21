@@ -25,7 +25,7 @@ async function build() {
       'dashboard': 'src/ui/dashboard/dashboard.js'
     },
     bundle: true,
-    format: 'esm',
+    format: 'iife',
     target: ['chrome100', 'firefox109'],
     outdir: 'dist',
     sourcemap: true,
@@ -53,8 +53,7 @@ async function build() {
   const distManifest = {
     ...rootManifest,
     background: {
-      service_worker: 'background.js',
-      type: 'module'
+      service_worker: 'background.js'
     },
     action: {
       ...rootManifest.action,

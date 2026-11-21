@@ -6,7 +6,7 @@ import { stashService } from '../../stash/stash-service.js';
 import { bookmarkManager } from '../../bookmarks/manager.js';
 import { DEFAULT_SETTINGS, extractDomain } from '../../models/types.js';
 
-document.addEventListener('DOMContentLoaded', async () => {
+async function initPopup() {
   const btnStashWindow = document.getElementById('btnStashWindow');
   const btnStashWindowText = document.getElementById('btnStashWindowText');
   const btnStashTab = document.getElementById('btnStashTab');
@@ -17,6 +17,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const btnQuickSync = document.getElementById('btnQuickSync');
   const syncStatusBadge = document.getElementById('syncStatusBadge');
   const syncStatusText = document.getElementById('syncStatusText');
+
+  if (!btnStashWindow) return;
 
   // Initialize stash service
   await stashService.init();
@@ -31,12 +33,23 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // Update window tabs count on button
-  chrome.tabs.query({ currentWindow: true }, (tabs) => {
-    const validCount = tabs.filter(t => t.url && t.url.startsWith('http') && !t.url.includes(chrome.runtime.id)).length;
+  chrome.tabs.query({ lastFocusedWindow: true }, (tabs) => {
+    let list = tabs;
+    if (!list || list.length === 0) {
+      chrome.tabs.query({ currentWindow: true }, (fallbackTabs) => {
+        updateTabCount(fallbackTabs);
+      });
+    } else {
+      updateTabCount(list);
+    }
+  });
+
+  function updateTabCount(tabs) {
+    const validCount = (tabs || []).filter(t => t.url && (t.url.startsWith('http://') || t.url.startsWith('https://') || t.url.startsWith('file://')) && !t.url.includes(chrome.runtime.id)).length;
     if (validCount > 0) {
       btnStashWindowText.textContent = `Stash Window (${validCount} tabs)`;
     }
-  });
+  }
 
   // Load sync status
   const { eb_settings } = await chrome.storage.local.get('eb_settings');
@@ -188,4 +201,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     quickSearchResults.classList.remove('hidden');
   }
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initPopup);
+} else {
+  initPopup();
+}

@@ -86,10 +86,17 @@ export class StashService {
    */
   async stashCurrentWindow(targetFolderId = null, customTitle = null) {
     await this.init();
-    const tabs = await chrome.tabs.query({ currentWindow: true });
+    // Query last focused window first (critical for background service workers)
+    let tabs = await chrome.tabs.query({ lastFocusedWindow: true });
+    if (!tabs || tabs.length === 0) {
+      tabs = await chrome.tabs.query({ currentWindow: true });
+    }
+    if (!tabs || tabs.length === 0) {
+      tabs = await chrome.tabs.query({});
+    }
 
     // Filter out internal and invalid tabs
-    const validTabs = tabs.filter(tab => {
+    const validTabs = (tabs || []).filter(tab => {
       const url = tab.url || '';
       return (
         url.startsWith('http://') ||
@@ -99,6 +106,9 @@ export class StashService {
     });
 
     if (validTabs.length === 0) {
+      // Still open dashboard so user sees their stashes
+      const dashboardUrl = chrome.runtime.getURL('dashboard.html');
+      await chrome.tabs.create({ url: dashboardUrl });
       return { count: 0 };
     }
 
@@ -133,8 +143,13 @@ export class StashService {
     await this._save();
 
     // Open dashboard before closing window tabs so window doesn't close completely
-    const dashboardUrl = chrome.runtime.getURL('src/ui/dashboard/dashboard.html');
-    await chrome.tabs.create({ url: dashboardUrl });
+    const targetWindowId = validTabs[0].windowId;
+    const dashboardUrl = chrome.runtime.getURL('dashboard.html');
+    if (targetWindowId) {
+      await chrome.tabs.create({ url: dashboardUrl, windowId: targetWindowId });
+    } else {
+      await chrome.tabs.create({ url: dashboardUrl });
+    }
 
     // Close the original stashed tabs
     const tabIdsToClose = validTabs.map(t => t.id).filter(Boolean);
@@ -150,8 +165,20 @@ export class StashService {
    */
   async stashActiveTab(targetFolderId = null) {
     await this.init();
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (!tab || !tab.url || (!tab.url.startsWith('http') && !tab.url.startsWith('file'))) {
+    let queryResults = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+    if (!queryResults || queryResults.length === 0) {
+      queryResults = await chrome.tabs.query({ active: true, currentWindow: true });
+    }
+    if (!queryResults || queryResults.length === 0) {
+      queryResults = await chrome.tabs.query({ active: true });
+    }
+
+    const tab = (queryResults || []).find(t => {
+      const u = t.url || '';
+      return (u.startsWith('http://') || u.startsWith('https://') || u.startsWith('file://')) && !u.includes(chrome.runtime.id);
+    });
+
+    if (!tab) {
       return null;
     }
 
@@ -175,6 +202,16 @@ export class StashService {
 
     this.sessions.unshift(newSession);
     await this._save();
+
+    // If closing this tab would leave the window empty, open dashboard first
+    const targetWindowId = tab.windowId;
+    if (targetWindowId) {
+      const allWindowTabs = await chrome.tabs.query({ windowId: targetWindowId });
+      if (allWindowTabs.length <= 1) {
+        const dashboardUrl = chrome.runtime.getURL('dashboard.html');
+        await chrome.tabs.create({ url: dashboardUrl, windowId: targetWindowId });
+      }
+    }
 
     await chrome.tabs.remove(tab.id);
     return newSession;

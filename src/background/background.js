@@ -93,7 +93,7 @@ chrome.commands.onCommand.addListener(async (command) => {
 });
 
 function openDashboard() {
-  const dashboardUrl = chrome.runtime.getURL('src/ui/dashboard/dashboard.html');
+  const dashboardUrl = chrome.runtime.getURL('dashboard.html');
   chrome.tabs.query({}, (tabs) => {
     const existing = tabs.find(t => t.url && t.url.startsWith(dashboardUrl));
     if (existing) {
@@ -135,7 +135,8 @@ chrome.bookmarks.onMoved.addListener((id, moveInfo) => {
   triggerDebouncedSync();
 });
 
-chrome.bookmarks.onRemoved.addListener((id, removeInfo) => {
+chrome.bookmarks.onRemoved.addListener(async (id, removeInfo) => {
+  await idStore.init();
   idStore.deleteMapping(id);
   triggerDebouncedSync();
 });

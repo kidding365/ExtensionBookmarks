@@ -5,7 +5,7 @@
   "description": "Unified cross-browser bookmarks sync and OneTab-style tab manager powered by private GitHub Gist.",
   "scripts": {
     "build": "node build.js",
-    "test": "node test/test-all.js"
+    "test": "node test/test-all.js && node test/test-integration-mock.js"
   },
   "devDependencies": {
     "esbuild": "^0.28.2"

@@ -32,8 +32,7 @@
     "unlimitedStorage",
     "tabs",
     "alarms",
-    "contextMenus",
-    "favicon"
+    "contextMenus"
   ],
   "host_permissions": [
     "https://api.github.com/*"

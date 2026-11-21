@@ -802,7 +802,13 @@ class DashboardApp {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+function initDashboard() {
   const app = new DashboardApp();
   app.init();
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initDashboard);
+} else {
+  initDashboard();
+}

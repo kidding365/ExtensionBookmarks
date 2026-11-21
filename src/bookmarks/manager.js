@@ -159,8 +159,7 @@ export class BookmarkManager {
         if (remoteItem.type === 'folder') {
           const created = await chrome.bookmarks.create({
             parentId: parentBrowserId,
-            title: remoteItem.title,
-            index: i
+            title: remoteItem.title
           });
           idStore.setMapping(created.id, remoteItem.id);
           remoteSeenLocalIds.add(created.id);
@@ -172,8 +171,7 @@ export class BookmarkManager {
           const created = await chrome.bookmarks.create({
             parentId: parentBrowserId,
             title: remoteItem.title,
-            url: remoteItem.url,
-            index: i
+            url: remoteItem.url
           });
           idStore.setMapping(created.id, remoteItem.id);
           remoteSeenLocalIds.add(created.id);
