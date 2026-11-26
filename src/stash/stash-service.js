@@ -15,11 +15,16 @@ export class StashService {
     this.initialized = false;
   }
 
-  async init() {
-    if (this.initialized) return;
+  async init(force = false) {
+    if (this.initialized && !force) return;
     const data = await chrome.storage.local.get([KEY_FOLDERS, KEY_SESSIONS]);
 
-    this.folders = data[KEY_FOLDERS] || DEFAULT_GROUP_FOLDERS;
+    if (!data[KEY_FOLDERS]) {
+      this.folders = DEFAULT_GROUP_FOLDERS;
+      await this._save();
+    } else {
+      this.folders = data[KEY_FOLDERS];
+    }
     this.sessions = data[KEY_SESSIONS] || [];
     this.initialized = true;
   }

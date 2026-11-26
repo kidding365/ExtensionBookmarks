@@ -35,6 +35,22 @@ class DashboardApp {
   }
 
   bindEvents() {
+    // Listen for storage changes from background / popup / sync
+    chrome.storage.onChanged.addListener(async (changes, areaName) => {
+      if (areaName === 'local') {
+        if (changes.eb_stored_sessions || changes.eb_stored_folders) {
+          await stashService.init(true);
+          await this.refreshSidebar();
+          await this.renderContent();
+        }
+        if (changes.eb_settings) {
+          const { eb_settings } = await chrome.storage.local.get('eb_settings');
+          this.settings = { ...DEFAULT_SETTINGS, ...(eb_settings || {}) };
+          await this.updateSyncUI();
+        }
+      }
+    });
+
     // Navigation items
     document.querySelectorAll('.nav-item[data-view]').forEach(item => {
       item.addEventListener('click', (e) => {
@@ -394,6 +410,7 @@ class DashboardApp {
   // --- Content Rendering ---
 
   async renderContent() {
+    await stashService.init(true);
     const container = document.getElementById('contentList');
     container.innerHTML = '';
 

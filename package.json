@@ -5,9 +5,11 @@
   "description": "Unified cross-browser bookmarks sync and OneTab-style tab manager powered by private GitHub Gist.",
   "scripts": {
     "build": "node build.js",
-    "test": "node test/test-all.js && node test/test-integration-mock.js"
+    "test": "node test/test-all.js && node test/test-integration-mock.js",
+    "test:e2e": "node test/automated-e2e.js"
   },
   "devDependencies": {
-    "esbuild": "^0.28.2"
+    "esbuild": "^0.28.2",
+    "puppeteer-core": "^25.19.0"
   }
 }

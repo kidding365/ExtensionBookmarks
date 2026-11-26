@@ -1,4 +1,6 @@
-# Operating System files
+# Test browser binaries & temporary profiles
+chrome/
+test/probe-chrome.js
 .DS_Store
 Thumbs.db
 desktop.ini
