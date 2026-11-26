@@ -1,14 +1,61 @@
 {
-  "version": 1,
   "folders": [
     {
       "id": "spf_youtube",
       "name": "YouTube",
       "color": "#ef4444",
       "createdAt": 1795239769987
+    },
+    {
+      "id": "spf_research",
+      "name": "Research",
+      "color": "#3b82f6",
+      "createdAt": 1795673690070
+    },
+    {
+      "id": "spf_dev",
+      "name": "Development",
+      "color": "#10b981",
+      "createdAt": 1795673690070
+    },
+    {
+      "id": "spf_reading",
+      "name": "Reading List",
+      "color": "#8b5cf6",
+      "createdAt": 1795673690070
     }
   ],
   "sessions": [
+    {
+      "id": "sps_03819f7f20684f26",
+      "folderId": null,
+      "title": "example.com & 2 tabs",
+      "createdAt": 1795673693404,
+      "isLocked": false,
+      "tabs": [
+        {
+          "id": "tab_8a9af497bbc044ca",
+          "title": "Example Domain",
+          "url": "https://example.com/",
+          "domain": "example.com",
+          "faviconUrl": "https://www.google.com/s2/favicons?sz=32&domain=example.com"
+        },
+        {
+          "id": "tab_171e95d2eebf4295",
+          "title": "Example Domain",
+          "url": "https://example.org/",
+          "domain": "example.org",
+          "faviconUrl": "https://www.google.com/s2/favicons?sz=32&domain=example.org"
+        },
+        {
+          "id": "tab_5f0065a2cdaa40d8",
+          "title": "Example Domain",
+          "url": "https://example.net/",
+          "domain": "example.net",
+          "faviconUrl": "https://www.google.com/s2/favicons?sz=32&domain=example.net"
+        }
+      ]
+    },
     {
       "id": "sps_live_test",
       "folderId": "spf_youtube",
