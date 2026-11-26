@@ -27,6 +27,36 @@
   ],
   "sessions": [
     {
+      "id": "sps_e1a045632d534a63",
+      "folderId": null,
+      "title": "example.com & 2 tabs",
+      "createdAt": 1795673838225,
+      "isLocked": false,
+      "tabs": [
+        {
+          "id": "tab_35643c5220234637",
+          "title": "Example Domain",
+          "url": "https://example.com/",
+          "domain": "example.com",
+          "faviconUrl": "https://www.google.com/s2/favicons?sz=32&domain=example.com"
+        },
+        {
+          "id": "tab_40194b3f26e14f8a",
+          "title": "Example Domain",
+          "url": "https://example.org/",
+          "domain": "example.org",
+          "faviconUrl": "https://www.google.com/s2/favicons?sz=32&domain=example.org"
+        },
+        {
+          "id": "tab_a2d63659bb484ad8",
+          "title": "Example Domain",
+          "url": "https://example.net/",
+          "domain": "example.net",
+          "faviconUrl": "https://www.google.com/s2/favicons?sz=32&domain=example.net"
+        }
+      ]
+    },
+    {
       "id": "sps_03819f7f20684f26",
       "folderId": null,
       "title": "example.com & 2 tabs",
