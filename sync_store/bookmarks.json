@@ -1,6 +1,4 @@
 {
-  "version": 1,
-  "lastModified": 1795239769987,
   "bookmarksBar": [
     {
       "id": "bm_test_1",
@@ -24,5 +22,6 @@
         }
       ]
     }
-  ]
+  ],
+  "tombstones": {}
 }
